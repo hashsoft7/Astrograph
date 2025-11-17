@@ -265,6 +265,3 @@ To keep scope sane, Astrograph v1 **will not**:
 * Static analysis enthusiasts
 * Tooling & compiler nerds
 * OSS documentation writers
-
-
-Just tell me where to go next 🚀
