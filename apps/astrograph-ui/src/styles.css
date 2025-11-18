@@ -1,0 +1,253 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #111827;
+  border-bottom: 1px solid #1f2937;
+}
+
+.logo {
+  font-weight: 600;
+  letter-spacing: 0.8px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.file-button {
+  background: #4f46e5;
+  color: #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.file-button input {
+  display: none;
+}
+
+.error-banner {
+  background: #7f1d1d;
+  color: #fecaca;
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.app-body {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar,
+.bookmarks-panel {
+  border-right: 1px solid #1f2937;
+  padding: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #0b1120;
+}
+
+.bookmarks-panel {
+  border-right: none;
+  border-left: 1px solid #1f2937;
+}
+
+.graph-panel {
+  position: relative;
+  background: #0f172a;
+}
+
+.graph-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.graph-placeholder {
+  padding: 24px;
+  color: #94a3b8;
+}
+
+.panel {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.panel-label {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: #e2e8f0;
+  font-size: 12px;
+}
+
+.stats {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.symbol-list {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.symbol-row {
+  background: transparent;
+  border: 1px solid transparent;
+  color: inherit;
+  text-align: left;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+}
+
+.symbol-row:hover {
+  background: #111827;
+  border-color: #1f2937;
+}
+
+.symbol-row.selected {
+  background: #1e1b4b;
+  border-color: #4338ca;
+}
+
+.symbol-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.symbol-kind {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.symbol-path {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.selection-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.selection-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.selection-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.selection-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.button {
+  background: #334155;
+  color: #e2e8f0;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.button.secondary {
+  background: #1e293b;
+}
+
+.label-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bookmark-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: auto;
+  max-height: 180px;
+}
+
+.bookmark-row {
+  display: flex;
+  justify-content: space-between;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: inherit;
+  font-size: 12px;
+}
+
+.bookmark-id {
+  color: #64748b;
+}
+
+.empty-state {
+  font-size: 12px;
+  color: #64748b;
+  padding: 8px 0;
+}
