@@ -13,6 +13,18 @@ target
 # Contains mutation testing data
 **/mutants.out*/
 
+# Node.js / frontend
+node_modules
+dist
+build
+.vite
+.turbo
+.parcel-cache
+
+# Tauri
+src-tauri/target
+src-tauri/gen
+
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
