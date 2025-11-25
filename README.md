@@ -303,6 +303,20 @@ npm run dev
 
 Then load `analysis.json` in the UI.
 
+### Run the desktop shell (Tauri)
+
+```bash
+cd apps/astrograph-ui
+npm install
+npm run tauri:dev
+```
+
+To build a production installer (Windows):
+
+```bash
+npm run tauri:build
+```
+
 ---
 
 ## CLI Flags
