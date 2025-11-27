@@ -12,4 +12,9 @@ export default defineConfig({
     port: 4173,
     strictPort: true,
   },
+  test: {
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.ts",
+    clearMocks: true,
+  },
 });
