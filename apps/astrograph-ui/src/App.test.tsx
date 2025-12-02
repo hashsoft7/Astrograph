@@ -57,6 +57,16 @@ const sampleAnalysis: AnalysisResult = {
   entrypoints: ["sym_main"],
 };
 
+const makeFile = (contents: string) => {
+  const file = new File([contents], "analysis.json", {
+    type: "application/json",
+  });
+  Object.defineProperty(file, "text", {
+    value: () => Promise.resolve(contents),
+  });
+  return file;
+};
+
 const resetStore = () => {
   useAnalysisStore.setState({
     analysis: null,
@@ -88,9 +98,7 @@ describe("App", () => {
     render(<App />);
 
     const input = screen.getByLabelText(/load analysis/i);
-    const file = new File([JSON.stringify(sampleAnalysis)], "analysis.json", {
-      type: "application/json",
-    });
+    const file = makeFile(JSON.stringify(sampleAnalysis));
 
     await user.upload(input, file);
 
@@ -106,9 +114,7 @@ describe("App", () => {
     render(<App />);
 
     const input = screen.getByLabelText(/load analysis/i);
-    const file = new File(["{bad-json"], "analysis.json", {
-      type: "application/json",
-    });
+    const file = makeFile("{bad-json");
 
     await user.upload(input, file);
 
