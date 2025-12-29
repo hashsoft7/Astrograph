@@ -37,7 +37,10 @@ pub struct AnalysisOutput {
     pub cache: AnalysisCache,
 }
 
-pub fn analyze_project(config: AnalysisConfig, cache: Option<AnalysisCache>) -> Result<AnalysisOutput> {
+pub fn analyze_project(
+    config: AnalysisConfig,
+    cache: Option<AnalysisCache>,
+) -> Result<AnalysisOutput> {
     let root = config.root.canonicalize()?;
     let root_string = root.to_string_lossy().to_string();
 
@@ -79,17 +82,10 @@ pub fn analyze_project(config: AnalysisConfig, cache: Option<AnalysisCache>) -> 
         symbols.extend(outcome.parsed.symbols.clone());
         calls.extend(outcome.parsed.calls.clone());
 
-        cache.upsert(
-            outcome.path,
-            outcome.hash,
-            outcome.language,
-            outcome.parsed,
-        );
+        cache.upsert(outcome.path, outcome.hash, outcome.language, outcome.parsed);
     }
 
-    cache
-        .files
-        .retain(|path, _| files_set.contains(path));
+    cache.files.retain(|path, _| files_set.contains(path));
 
     resolve_calls(&mut calls, &symbols);
     apply_manual_entrypoints(&mut symbols, &config.manual_entrypoints);
@@ -195,10 +191,7 @@ fn resolve_calls(calls: &mut [CallEdge], symbols: &[Symbol]) {
     let mut by_fq: HashMap<String, Vec<&Symbol>> = HashMap::new();
 
     for symbol in symbols {
-        by_name
-            .entry(symbol.name.clone())
-            .or_default()
-            .push(symbol);
+        by_name.entry(symbol.name.clone()).or_default().push(symbol);
         by_fq
             .entry(symbol.fq_name.clone())
             .or_default()

@@ -186,13 +186,7 @@ fn js_container_info(node: Node, state: &mut ParseState<'_>) -> Option<Container
     match node.kind() {
         "class_declaration" => {
             let name = node_text(node.child_by_field_name("name")?, state.source);
-            let symbol = new_symbol(
-                state,
-                name,
-                SymbolKind::Class,
-                node,
-                js_is_exported(node),
-            );
+            let symbol = new_symbol(state, name, SymbolKind::Class, node, js_is_exported(node));
             Some(ContainerInfo {
                 name: name.to_string(),
                 kind: ContainerKind::Type,
@@ -302,13 +296,7 @@ fn js_function_symbol(node: Node, state: &mut ParseState<'_>) -> Option<Symbol> 
             } else {
                 SymbolKind::Function
             };
-            Some(new_symbol(
-                state,
-                name,
-                kind,
-                node,
-                js_is_exported(node),
-            ))
+            Some(new_symbol(state, name, kind, node, js_is_exported(node)))
         }
         "method_definition" => {
             let name = node_text(node.child_by_field_name("name")?, state.source);
@@ -324,7 +312,10 @@ fn js_function_symbol(node: Node, state: &mut ParseState<'_>) -> Option<Symbol> 
             let name_node = node.child_by_field_name("name")?;
             let value_node = node.child_by_field_name("value")?;
             let value_kind = value_node.kind();
-            if value_kind == "arrow_function" || value_kind == "function" || value_kind == "function_expression" {
+            if value_kind == "arrow_function"
+                || value_kind == "function"
+                || value_kind == "function_expression"
+            {
                 let name = node_text(name_node, state.source);
                 return Some(new_symbol(
                     state,
@@ -425,7 +416,10 @@ fn new_symbol(
 ) -> Symbol {
     let span = span_from_node(node);
     let fq_name = build_fq_name(&state.module_path, &state.containers, name);
-    let container = state.containers.last().map(|container| container.name.clone());
+    let container = state
+        .containers
+        .last()
+        .map(|container| container.name.clone());
     let is_entrypoint = name == "main" || is_exported;
     let id_seed = format!(
         "symbol:{}:{}:{}:{}:{}:{}:{}:{}",
@@ -465,9 +459,9 @@ fn build_fq_name(module_path: &str, containers: &[Container], name: &str) -> Str
 }
 
 fn in_method_context(containers: &[Container]) -> bool {
-    containers.iter().any(|container| {
-        matches!(container.kind, ContainerKind::Type | ContainerKind::Impl)
-    })
+    containers
+        .iter()
+        .any(|container| matches!(container.kind, ContainerKind::Type | ContainerKind::Impl))
 }
 
 fn rust_is_exported(node: Node, source: &[u8]) -> bool {
