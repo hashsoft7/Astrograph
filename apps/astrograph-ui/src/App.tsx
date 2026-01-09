@@ -48,7 +48,11 @@ const App = () => {
       setIsDragging(false);
       
       const file = e.dataTransfer?.files[0];
-      if (file && file.type === "application/json") {
+      const isJson =
+        file &&
+        (file.type === "application/json" ||
+          file.name.toLowerCase().endsWith(".json"));
+      if (isJson) {
         await loadFile(file);
       }
     };
