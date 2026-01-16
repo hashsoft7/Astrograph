@@ -21,3 +21,12 @@ test("loads analysis file and shows stats", async ({ page }) => {
   await expect(meta).toContainText("2 symbols");
   await expect(meta).toContainText("1 calls");
 });
+
+test("switches to Files tab and shows file tree", async ({ page }) => {
+  await page.goto("/");
+  const input = page.locator('input[type="file"]');
+  await input.setInputFiles(samplePath);
+  await page.getByRole("button", { name: /Files/i }).click();
+  await expect(page.locator(".file-tree")).toBeVisible();
+  await expect(page.getByText("main.ts")).toBeVisible();
+});
