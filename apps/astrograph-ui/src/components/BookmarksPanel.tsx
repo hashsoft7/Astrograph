@@ -73,6 +73,9 @@ const BookmarksPanel = () => {
         ...b,
         symbol: symbolMap.get(b.id) ?? null,
       }))
+      // Hide orphaned bookmarks (those with no corresponding symbol in the
+      // current analysis) so they don't clutter the UI.
+      .filter((entry) => entry.symbol !== null)
       .sort((a, b) => {
         const nameA = a.label || a.symbol?.name || a.id;
         const nameB = b.label || b.symbol?.name || b.id;
