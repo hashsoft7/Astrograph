@@ -3,6 +3,7 @@ use crate::language::{detect_language, supported_extensions};
 use crate::model::{AnalysisResult, AnalysisStats, CallEdge, FileInfo, ParsedFile, Symbol};
 use crate::parser::analyze_file;
 use anyhow::{anyhow, Result};
+use ignore::{DirEntry, WalkBuilder};
 use rayon::prelude::*;
 use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
@@ -10,7 +11,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
-use walkdir::{DirEntry, WalkDir};
 
 const SCHEMA_VERSION: &str = "0.1.0";
 
@@ -245,10 +245,25 @@ fn collect_files(root: &Path, follow_symlinks: bool) -> Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     let supported = supported_extensions();
 
-    let walker = WalkDir::new(root).follow_links(follow_symlinks);
-    for entry in walker.into_iter().filter_entry(|entry| !is_ignored(entry)) {
+    let mut builder = WalkBuilder::new(root);
+    builder.follow_links(follow_symlinks);
+    // Respect .gitignore, .ignore, and related git configuration by default.
+    // These are enabled by default on WalkBuilder, but we set them explicitly
+    // here for clarity and future-proofing.
+    builder.git_ignore(true).git_global(true).git_exclude(true);
+    // Allow project-specific ignore rules via a dedicated ignore file.
+    builder.add_custom_ignore_filename(".astrographignore");
+
+    for entry in builder
+        .build()
+        .into_iter()
+        .filter_entry(|entry| !is_ignored(entry))
+    {
         let entry = entry?;
-        if !entry.file_type().is_file() {
+        let file_type = entry
+            .file_type()
+            .ok_or_else(|| anyhow!("Missing file type for entry"))?;
+        if !file_type.is_file() {
             continue;
         }
         let path = entry.path();
@@ -267,7 +282,7 @@ fn collect_files(root: &Path, follow_symlinks: bool) -> Result<Vec<PathBuf>> {
 
 fn is_ignored(entry: &DirEntry) -> bool {
     if let Some(name) = entry.file_name().to_str() {
-        let is_dir = entry.file_type().is_dir();
+        let is_dir = entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false);
         let ignored = [
             ".git",
             "target",
