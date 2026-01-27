@@ -12,6 +12,9 @@ entrypoint views from source code and renders them in a local UI.
 cargo run -p astrograph-cli -- --root /path/to/repo --out analysis.json --cache .astrograph-cache.json
 ```
 
+The CLI prints a short progress message while it analyzes the project and clearer, user‑friendly
+errors if something goes wrong (for example when paths are missing or permissions are denied).
+
 ### Run the UI (dev)
 
 ```bash
