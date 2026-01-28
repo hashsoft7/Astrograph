@@ -265,3 +265,58 @@ To keep scope sane, Astrograph v1 **will not**:
 * Static analysis enthusiasts
 * Tooling & compiler nerds
 * OSS documentation writers
+
+---
+
+## Repository Layout
+
+```
+crates/
+  astrograph-engine/   Rust analysis engine
+  astrograph-cli/      CLI wrapper for analysis
+apps/
+  astrograph-ui/       React UI for graphs and bookmarks
+docs/
+  schema.md            JSON schema reference
+examples/
+  sample-project/      Tiny demo input
+  sample-output.json   Example analyzer output
+```
+
+---
+
+## Quick Start
+
+### Analyze a project (CLI)
+
+```bash
+cargo run -p astrograph-cli -- --root /path/to/repo --out analysis.json --cache .astrograph-cache.json
+```
+
+### Launch the UI
+
+```bash
+cd apps/astrograph-ui
+npm install
+npm run dev
+```
+
+Then load `analysis.json` in the UI.
+
+---
+
+## CLI Flags
+
+* `--root`: repository root
+* `--out`: output JSON path
+* `--cache`: cache path for incremental analysis
+* `--entrypoint`: mark entrypoints manually (repeatable)
+* `--follow-symlinks`: follow symlinks when scanning
+
+---
+
+## Notes
+
+* The engine currently supports Rust, JavaScript, and TypeScript via Tree-sitter.
+* Calls are resolved best-effort by name. FQ names improve accuracy.
+* Bookmarks and labels are stored locally in the UI using LocalStorage.
