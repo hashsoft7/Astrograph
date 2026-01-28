@@ -253,12 +253,10 @@ fn collect_files(root: &Path, follow_symlinks: bool) -> Result<Vec<PathBuf>> {
     builder.git_ignore(true).git_global(true).git_exclude(true);
     // Allow project-specific ignore rules via a dedicated ignore file.
     builder.add_custom_ignore_filename(".astrographignore");
+    // Apply additional project-specific directory ignore rules.
+    builder.filter_entry(|entry| !is_ignored(entry));
 
-    for entry in builder
-        .build()
-        .into_iter()
-        .filter_entry(|entry| !is_ignored(entry))
-    {
+    for entry in builder.build() {
         let entry = entry?;
         let file_type = entry
             .file_type()
@@ -269,7 +267,7 @@ fn collect_files(root: &Path, follow_symlinks: bool) -> Result<Vec<PathBuf>> {
         let path = entry.path();
         let ext = path
             .extension()
-            .map(|ext| ext.to_string_lossy().to_ascii_lowercase());
+            .map(|ext: &std::ffi::OsStr| ext.to_string_lossy().to_ascii_lowercase());
         if let Some(ext) = ext {
             if supported.contains(&ext.as_str()) {
                 files.push(path.to_path_buf());
