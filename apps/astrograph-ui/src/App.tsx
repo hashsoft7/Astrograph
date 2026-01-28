@@ -84,8 +84,36 @@ const App = () => {
       loadAnalysis(result);
     } catch (err) {
       console.error(err);
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message || "Analysis failed.");
+
+      // Tauri v2 wraps backend errors in an Error with a `payload` field.
+      // See https://tauri.app for details on the error shape.
+      const anyErr = err as unknown as { payload?: { code?: string; message?: string } };
+      const payload = anyErr?.payload;
+
+      if (payload?.code) {
+        switch (payload.code) {
+          case "invalid_path":
+            setError("Selected path does not exist.");
+            break;
+          case "not_directory":
+            setError("Please select a directory, not a file.");
+            break;
+          case "io_error":
+            setError(
+              "Could not read files from the selected directory. Check permissions.",
+            );
+            break;
+          case "analysis_failed":
+            setError("Analysis failed unexpectedly. See logs for details.");
+            break;
+          default:
+            setError(payload.message || "Analysis failed.");
+            break;
+        }
+      } else {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message || "Analysis failed.");
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -161,6 +189,9 @@ const App = () => {
           )}
         </div>
       </header>
+      {isTauri && isAnalyzing && !error && (
+        <div className="info-banner">Analyzing project… This may take a few moments.</div>
+      )}
       {error && <div className="error-banner">{error}</div>}
       {isDragging && (
         <div className="drop-overlay">
