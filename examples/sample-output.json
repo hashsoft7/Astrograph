@@ -1,0 +1,77 @@
+{
+  "schema_version": "0.1.0",
+  "root": "/path/to/examples/sample-project",
+  "generated_at": "2026-01-28T00:00:00Z",
+  "stats": {
+    "file_count": 2,
+    "symbol_count": 2,
+    "call_count": 1,
+    "entrypoint_count": 1,
+    "reused_cache_files": 0,
+    "reanalyzed_files": 2
+  },
+  "files": [
+    {
+      "path": "main.ts",
+      "language": "typescript",
+      "hash": "d3b07384d113edec49eaa6238ad5ff00",
+      "byte_size": 63
+    },
+    {
+      "path": "util.ts",
+      "language": "typescript",
+      "hash": "c157a79031e1c40f85931829bc5fc552",
+      "byte_size": 38
+    }
+  ],
+  "symbols": [
+    {
+      "id": "sym_main",
+      "name": "main",
+      "kind": "function",
+      "file": "main.ts",
+      "span": {
+        "start_line": 3,
+        "start_col": 1,
+        "end_line": 5,
+        "end_col": 2
+      },
+      "fq_name": "main::main",
+      "container": null,
+      "is_exported": true,
+      "is_entrypoint": true
+    },
+    {
+      "id": "sym_helper",
+      "name": "helper",
+      "kind": "function",
+      "file": "util.ts",
+      "span": {
+        "start_line": 1,
+        "start_col": 1,
+        "end_line": 3,
+        "end_col": 2
+      },
+      "fq_name": "util::helper",
+      "container": null,
+      "is_exported": true,
+      "is_entrypoint": false
+    }
+  ],
+  "calls": [
+    {
+      "id": "call_main_helper",
+      "caller_id": "sym_main",
+      "callee_name": "helper",
+      "callee_id": "sym_helper",
+      "file": "main.ts",
+      "span": {
+        "start_line": 4,
+        "start_col": 3,
+        "end_line": 4,
+        "end_col": 11
+      }
+    }
+  ],
+  "entrypoints": ["sym_main"]
+}
