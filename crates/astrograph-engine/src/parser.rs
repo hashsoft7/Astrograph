@@ -162,10 +162,18 @@ fn rust_container_info(node: Node, state: &mut ParseState<'_>) -> Option<Contain
         "impl_item" => {
             let target = node
                 .child_by_field_name("type")
-                .or_else(|| node.child_by_field_name("trait"))?;
-            let name = node_text(target, state.source);
+                .or_else(|| node.child_by_field_name("trait"))
+                .or_else(|| {
+                    find_descendant(
+                        node,
+                        &["type_identifier", "scoped_type_identifier", "generic_type"],
+                    )
+                });
+            let name = target
+                .map(|node| node_text(node, state.source).to_string())
+                .unwrap_or_else(|| "impl".to_string());
             Some(ContainerInfo {
-                name: name.to_string(),
+                name,
                 kind: ContainerKind::Impl,
                 symbol: None,
             })
@@ -541,6 +549,19 @@ fn kind_to_str(kind: SymbolKind) -> &'static str {
         SymbolKind::Function => "function",
         SymbolKind::Method => "method",
     }
+}
+
+fn find_descendant(node: Node, kinds: &[&str]) -> Option<Node> {
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if kinds.contains(&child.kind()) {
+            return Some(child);
+        }
+        if let Some(found) = find_descendant(child, kinds) {
+            return Some(found);
+        }
+    }
+    None
 }
 
 trait LanguageName {
