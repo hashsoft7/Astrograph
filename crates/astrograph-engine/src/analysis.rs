@@ -76,8 +76,8 @@ pub fn analyze_project(config: AnalysisConfig, cache: Option<AnalysisCache>) -> 
             byte_size: outcome.byte_size,
         });
 
-        symbols.extend(outcome.parsed.symbols);
-        calls.extend(outcome.parsed.calls);
+        symbols.extend(outcome.parsed.symbols.clone());
+        calls.extend(outcome.parsed.calls.clone());
 
         cache.upsert(
             outcome.path,

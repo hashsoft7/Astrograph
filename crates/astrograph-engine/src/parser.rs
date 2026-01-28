@@ -36,7 +36,7 @@ pub fn analyze_file(path: &Path, root: &Path, language: Language) -> Result<Pars
 
     let mut parser = Parser::new();
     parser
-        .set_language(tree_sitter_language(language))
+        .set_language(&tree_sitter_language(language))
         .map_err(|_| anyhow!("Failed to load Tree-sitter language"))?;
 
     let tree = parser
@@ -430,7 +430,7 @@ fn new_symbol(
     let id_seed = format!(
         "symbol:{}:{}:{}:{}:{}:{}:{}:{}",
         state.file,
-        kind_to_str(kind),
+        kind_to_str(&kind),
         fq_name,
         span.start_line,
         span.start_col,
@@ -537,7 +537,7 @@ fn hash_id(value: &str) -> String {
     hex::encode(hasher.finalize())
 }
 
-fn kind_to_str(kind: SymbolKind) -> &'static str {
+fn kind_to_str(kind: &SymbolKind) -> &'static str {
     match kind {
         SymbolKind::Class => "class",
         SymbolKind::Struct => "struct",
@@ -551,7 +551,7 @@ fn kind_to_str(kind: SymbolKind) -> &'static str {
     }
 }
 
-fn find_descendant(node: Node, kinds: &[&str]) -> Option<Node> {
+fn find_descendant<'a>(node: Node<'a>, kinds: &[&str]) -> Option<Node<'a>> {
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         if kinds.contains(&child.kind()) {
