@@ -1,0 +1,11 @@
+[workspace]
+members = [
+  "crates/astrograph-engine",
+  "crates/astrograph-cli",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+repository = "https://example.com/astrograph"
+version = "0.1.0"
