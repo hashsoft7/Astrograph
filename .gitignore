@@ -20,6 +20,7 @@ build
 .vite
 .turbo
 .parcel-cache
+test-results
 
 # Tauri
 src-tauri/target
