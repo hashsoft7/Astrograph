@@ -5,7 +5,11 @@ use std::fs;
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
-#[command(name = "astrograph", version, about = "Static analysis CLI for Astrograph")]
+#[command(
+    name = "astrograph",
+    version,
+    about = "Static analysis CLI for Astrograph"
+)]
 struct Cli {
     /// Root directory of the repository to analyze.
     #[arg(long, default_value = ".")]
