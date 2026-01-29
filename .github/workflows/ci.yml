@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: format
+        run: cargo fmt --check
+      - name: test
+        run: cargo test --workspace --all-targets
+
+  ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/astrograph-ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/astrograph-ui/package-lock.json
+      - name: install
+        run: npm ci
+      - name: unit tests
+        run: npm run test:run
+      - name: install browsers
+        run: npx playwright install --with-deps chromium
+      - name: e2e tests
+        run: npm run test:e2e
