@@ -13,6 +13,9 @@ target
 # Contains mutation testing data
 **/mutants.out*/
 
+.astrograph-cache.json
+analysis.json
+
 # Node.js / frontend
 node_modules
 dist
