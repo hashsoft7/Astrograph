@@ -36,7 +36,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     let mut config = AnalysisConfig::new(&cli.root);
     config.follow_symlinks = cli.follow_symlinks;
-    config.manual_entrypoints = cli.entrypoints.clone();
+    config.manual_entrypoints = cli.entrypoints;
 
     let cache = load_cache(cli.cache.as_ref())?;
     let output = analyze_project(config, cache)?;
