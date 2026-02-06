@@ -38,6 +38,8 @@ cd apps/astrograph-ui
 npm run tauri:dev
 ```
 
+In the desktop app you can use **Analyze project** to pick a directory and run analysis in-app (no CLI needed); results load automatically.
+
 To build a production installer (Windows):
 
 ```bash
