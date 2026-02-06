@@ -7,6 +7,8 @@ import BookmarksPanel from "./components/BookmarksPanel";
 import { useAnalysisStore } from "./state/store";
 import { AnalysisResult } from "./types";
 
+const isTauri = Boolean(import.meta.env.TAURI_PLATFORM);
+
 const App = () => {
   const loadAnalysis = useAnalysisStore((state) => state.loadAnalysis);
   const analysis = useAnalysisStore((state) => state.analysis);
@@ -99,14 +101,16 @@ const App = () => {
       <header className="app-header">
         <div className="logo">✦ Astrograph</div>
         <div className="header-actions">
-          <button
-            type="button"
-            className="file-button"
-            onClick={handleAnalyzeProject}
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? "Analyzing…" : "Analyze project"}
-          </button>
+          {isTauri && (
+            <button
+              type="button"
+              className="file-button"
+              onClick={handleAnalyzeProject}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? "Analyzing…" : "Analyze project"}
+            </button>
+          )}
           <label className="file-button">
             Load analysis
             <input
