@@ -20,12 +20,12 @@ const sampleAnalysis: AnalysisResult = {
   root: "/tmp/sample",
   generated_at: "2026-01-28T00:00:00Z",
   stats: {
-    file_count: 2,
-    symbol_count: 2,
-    call_count: 1,
+    file_count: 1,
+    symbol_count: 1,
+    call_count: 0,
     entrypoint_count: 1,
     reused_cache_files: 0,
-    reanalyzed_files: 2,
+    reanalyzed_files: 1,
   },
   files: [
     {
@@ -102,9 +102,9 @@ describe("App", () => {
 
     await user.upload(input, file);
 
-    expect(await screen.findByText(/2 files/i)).toBeInTheDocument();
-    expect(screen.getByText(/2 symbols/i)).toBeInTheDocument();
-    expect(screen.getByText(/1 calls/i)).toBeInTheDocument();
+    expect(await screen.findByText(/1 files/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 symbols/i)).toBeInTheDocument();
+    expect(screen.getByText(/0 calls/i)).toBeInTheDocument();
   });
 
   it("shows an error for invalid JSON", async () => {
