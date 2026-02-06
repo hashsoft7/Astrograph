@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAnalysisStore } from "../state/store";
 import { Symbol } from "../types";
 
@@ -52,6 +52,10 @@ const BookmarksPanel = () => {
   }, [analysis, selectedSymbolId]);
 
   const [labelDraft, setLabelDraft] = useState("");
+
+  useEffect(() => {
+    setLabelDraft("");
+  }, [selectedSymbolId]);
 
   // Create bookmark entries with symbol information
   const bookmarkEntries = useMemo(() => {

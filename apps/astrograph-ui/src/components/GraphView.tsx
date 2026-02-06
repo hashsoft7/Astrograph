@@ -335,27 +335,20 @@ const GraphView = () => {
 
     cyRef.current = cy;
 
-    // Node click handler
-    cy.on("tap", "node", (event) => {
-      const nodeId = event.target.id();
-      selectSymbol(nodeId);
-    });
-
-    // Double-click to find path
+    // Node tap: select symbol; double-tap on another node finds path
     let lastTapTime = 0;
     let lastTapNode: string | null = null;
 
     cy.on("tap", "node", (event) => {
       const now = Date.now();
       const nodeId = event.target.id();
+      selectSymbol(nodeId);
 
       if (now - lastTapTime < 300 && lastTapNode && lastTapNode !== nodeId) {
-        // Double-tap on different node - find path
         const path = findCallPath(lastTapNode, nodeId);
         if (path.length > 0) {
           setHighlightedPath(path);
         } else {
-          // Try reverse direction
           const reversePath = findCallPath(nodeId, lastTapNode);
           setHighlightedPath(reversePath);
         }
