@@ -1,4 +1,6 @@
 import { ChangeEvent, useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import GraphView from "./components/GraphView";
 import Sidebar from "./components/Sidebar";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -10,6 +12,7 @@ const App = () => {
   const analysis = useAnalysisStore((state) => state.analysis);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleFileLoad = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -28,6 +31,29 @@ const App = () => {
     } catch (err) {
       console.error(err);
       setError("Unable to parse analysis JSON. Make sure it's a valid Astrograph output file.");
+    }
+  };
+
+  const handleAnalyzeProject = async () => {
+    try {
+      setError(null);
+      const selected = await open({
+        directory: true,
+        multiple: false,
+      });
+      if (selected == null) {
+        return;
+      }
+      setIsAnalyzing(true);
+      const path = typeof selected === "string" ? selected : String(selected);
+      const result = await invoke<AnalysisResult>("analyze_project_dir", { path });
+      loadAnalysis(result);
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || "Analysis failed.");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -73,6 +99,14 @@ const App = () => {
       <header className="app-header">
         <div className="logo">✦ Astrograph</div>
         <div className="header-actions">
+          <button
+            type="button"
+            className="file-button"
+            onClick={handleAnalyzeProject}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? "Analyzing…" : "Analyze project"}
+          </button>
           <label className="file-button">
             Load analysis
             <input
