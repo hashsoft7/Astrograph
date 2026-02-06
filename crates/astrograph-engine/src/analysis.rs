@@ -294,3 +294,30 @@ fn hash_bytes(bytes: &[u8]) -> String {
     hasher.update(bytes);
     hex::encode(hasher.finalize())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn analyze_empty_directory_produces_valid_output() {
+        let temp_dir = std::env::temp_dir().join("astrograph_empty_test");
+        let _ = fs::remove_dir_all(&temp_dir);
+        fs::create_dir_all(&temp_dir).unwrap();
+
+        let config = AnalysisConfig::new(&temp_dir);
+        let output = analyze_project(config, None).unwrap();
+
+        assert_eq!(output.result.stats.file_count, 0);
+        assert_eq!(output.result.stats.symbol_count, 0);
+        assert_eq!(output.result.stats.call_count, 0);
+        assert_eq!(output.result.stats.entrypoint_count, 0);
+        assert!(output.result.entrypoints.is_empty());
+        assert!(output.result.files.is_empty());
+        assert!(output.result.symbols.is_empty());
+        assert!(output.result.calls.is_empty());
+
+        let _ = fs::remove_dir_all(&temp_dir);
+    }
+}
