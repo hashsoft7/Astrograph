@@ -173,7 +173,7 @@ export const validateAnalysisResult = (
 
   return {
     ok: true,
-    value: value as AnalysisResult,
+    value: value as unknown as AnalysisResult,
   };
 };
 
