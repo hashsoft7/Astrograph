@@ -3,6 +3,7 @@ use astrograph_engine::{analyze_project, AnalysisCache, AnalysisConfig};
 use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
+use std::process;
 
 #[derive(Debug, Parser)]
 #[command(
@@ -32,8 +33,18 @@ struct Cli {
     follow_symlinks: bool,
 }
 
-fn main() -> Result<()> {
+fn main() {
+    if let Err(err) = run() {
+        eprintln!("Error: {}", format_user_friendly_error(&err));
+        process::exit(1);
+    }
+}
+
+fn run() -> Result<()> {
     let cli = Cli::parse();
+
+    println!("Analyzing {} ...", cli.root.display());
+
     let mut config = AnalysisConfig::new(&cli.root);
     config.follow_symlinks = cli.follow_symlinks;
     config.manual_entrypoints = cli.entrypoints;
@@ -41,10 +52,14 @@ fn main() -> Result<()> {
     let cache = load_cache(cli.cache.as_ref())?;
     let output = analyze_project(config, cache)?;
 
+    println!("Writing analysis to {} ...", cli.out.display());
+
     let json = serde_json::to_string_pretty(&output.result)?;
     fs::write(&cli.out, json).with_context(|| format!("Failed to write {}", cli.out.display()))?;
 
     if let Some(cache_path) = cli.cache {
+        println!("Writing cache to {} ...", cache_path.display());
+
         let cache_json = serde_json::to_string_pretty(&output.cache)?;
         fs::write(&cache_path, cache_json)
             .with_context(|| format!("Failed to write {}", cache_path.display()))?;
@@ -70,4 +85,23 @@ fn load_cache(path: Option<&PathBuf>) -> Result<Option<AnalysisCache>> {
         fs::read_to_string(path).with_context(|| format!("Failed to read {}", path.display()))?;
     let cache = serde_json::from_str(&data)?;
     Ok(Some(cache))
+}
+
+fn format_user_friendly_error(err: &anyhow::Error) -> String {
+    if let Some(io_err) = err.downcast_ref::<std::io::Error>() {
+        use std::io::ErrorKind;
+
+        return match io_err.kind() {
+            ErrorKind::NotFound => {
+                "File or directory not found. Check the --root and output paths.".to_string()
+            }
+            ErrorKind::PermissionDenied => {
+                "Permission denied when accessing files. Check your file permissions.".to_string()
+            }
+            _ => err.to_string(),
+        };
+    }
+
+    // Fall back to the original error message for non-I/O errors.
+    err.to_string()
 }
