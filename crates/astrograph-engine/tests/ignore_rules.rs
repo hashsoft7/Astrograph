@@ -42,7 +42,10 @@ fn gitignore_excludes_ignored_directories() {
     let out = analyze_project(config, None).expect("analyze should succeed");
 
     let file_paths: Vec<&str> = out.result.files.iter().map(|f| f.path.as_str()).collect();
-    println!("gitignore_excludes_ignored_directories paths: {:?}", file_paths);
+    println!(
+        "gitignore_excludes_ignored_directories paths: {:?}",
+        file_paths
+    );
 
     assert!(
         file_paths.iter().any(|p| p.ends_with("included/main.ts")),
