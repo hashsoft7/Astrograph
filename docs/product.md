@@ -35,6 +35,7 @@ All analysis is static: no execution, no instrumentation, no runtime hooks.
 ### 1. Codebase analysis
 
 - Scan a local repository or directory
+- Respect `.gitignore`, `.ignore`, and optional `.astrographignore` patterns
 - Incremental parsing (only re-analyze changed files)
 - Language-aware parsing via Tree-sitter
 - Support medium-to-large projects (10k+ files)
