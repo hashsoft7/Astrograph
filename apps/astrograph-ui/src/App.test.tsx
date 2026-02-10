@@ -124,4 +124,54 @@ describe("App", () => {
 
     errorSpy.mockRestore();
   });
+
+  it("shows an error for schema-invalid JSON", async () => {
+    const user = userEvent.setup();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    render(<App />);
+
+    const input = screen.getByLabelText(/load analysis/i);
+    // Missing required fields like stats/files/etc.
+    const invalid = { foo: "bar" };
+    const file = makeFile(JSON.stringify(invalid));
+
+    await user.upload(input, file);
+
+    expect(
+      await screen.findByText(
+        /the analysis file is not a valid astrograph analysis/i,
+      ),
+    ).toBeInTheDocument();
+
+    const state = useAnalysisStore.getState();
+    expect(state.analysis).toBeNull();
+
+    errorSpy.mockRestore();
+  });
+
+  it("shows an error for incompatible schema version", async () => {
+    const user = userEvent.setup();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    render(<App />);
+
+    const input = screen.getByLabelText(/load analysis/i);
+    const incompatible = {
+      ...sampleAnalysis,
+      schema_version: "0.0.9",
+    };
+    const file = makeFile(JSON.stringify(incompatible));
+
+    await user.upload(input, file);
+
+    expect(
+      await screen.findByText(/incompatible astrograph schema version/i),
+    ).toBeInTheDocument();
+
+    const state = useAnalysisStore.getState();
+    expect(state.analysis).toBeNull();
+
+    errorSpy.mockRestore();
+  });
 });
