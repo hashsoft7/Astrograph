@@ -157,7 +157,7 @@ fn analyze_path(
         .strip_prefix(root)
         .unwrap_or(path)
         .to_string_lossy()
-        .to_string();
+        .replace('\\', "/");
 
     if let Some(cached) = cache_files.get(&relative_path) {
         if cached.hash == hash && cached.language == language {
