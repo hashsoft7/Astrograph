@@ -55,4 +55,3 @@ fn manual_entrypoints_applied() {
         "manual entrypoint should mark symbol as entrypoint"
     );
 }
-
