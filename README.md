@@ -4,6 +4,8 @@ Astrograph is a lightweight, open-source static code analysis and visualization
 tool for exploring large codebases. It generates call graphs, symbol maps, and
 entrypoint views from source code and renders them in a local UI.
 
+![Astrograph Code Analysis Visualization](./assets/Astrograph-Code-Analysis-Visualization.png)
+
 ## Quick start
 
 ### Analyze a project (CLI)
