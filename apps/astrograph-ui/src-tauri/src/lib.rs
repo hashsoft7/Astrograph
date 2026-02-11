@@ -1,5 +1,6 @@
 use astrograph_engine::{analyze_project, AnalysisConfig};
 use serde::Serialize;
+use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
 
@@ -54,11 +55,72 @@ fn analyze_project_dir(
     Ok(output.result)
 }
 
+#[derive(Debug, Serialize)]
+#[serde(tag = "code")]
+pub enum ReadFileErrorPayload {
+    #[serde(rename = "file_not_found")]
+    FileNotFound { message: String },
+    #[serde(rename = "io_error")]
+    IoError { message: String },
+    #[serde(rename = "invalid_path")]
+    InvalidPath { message: String },
+}
+
+#[tauri::command]
+fn read_file_content(
+    root_path: String,
+    file_path: String,
+) -> Result<String, ReadFileErrorPayload> {
+    let root = PathBuf::from(&root_path);
+    if !root.exists() {
+        return Err(ReadFileErrorPayload::InvalidPath {
+            message: "Root path does not exist.".to_string(),
+        });
+    }
+
+    let file = root.join(&file_path);
+    
+    // Security: Ensure the file path is within the root directory
+    if !file.starts_with(&root) {
+        return Err(ReadFileErrorPayload::InvalidPath {
+            message: "File path is outside the project root.".to_string(),
+        });
+    }
+
+    if !file.exists() {
+        return Err(ReadFileErrorPayload::FileNotFound {
+            message: format!("File not found: {}", file_path),
+        });
+    }
+
+    if !file.is_file() {
+        return Err(ReadFileErrorPayload::InvalidPath {
+            message: format!("Path is not a file: {}", file_path),
+        });
+    }
+
+    fs::read_to_string(&file).map_err(|err| {
+        if err.kind() == ErrorKind::NotFound {
+            ReadFileErrorPayload::FileNotFound {
+                message: format!("File not found: {}", file_path),
+            }
+        } else if err.kind() == ErrorKind::PermissionDenied {
+            ReadFileErrorPayload::IoError {
+                message: format!("Permission denied reading file: {}", file_path),
+            }
+        } else {
+            ReadFileErrorPayload::IoError {
+                message: format!("Error reading file: {}", err),
+            }
+        }
+    })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![analyze_project_dir])
+        .invoke_handler(tauri::generate_handler![analyze_project_dir, read_file_content])
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
