@@ -5,7 +5,6 @@ import "prismjs/components/prism-rust";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-typescript";
 import "prismjs/components/prism-tsx";
-import { invoke } from "@tauri-apps/api/core";
 import { Symbol, Span } from "../types";
 
 interface SourcePreviewProps {
@@ -125,10 +124,14 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
     setError(null);
     setContent(null);
 
-    invoke<string>("read_file_content", {
-      rootPath,
-      filePath: symbol.file,
-    })
+    // Use dynamic import to avoid loading Tauri API in browser environment
+    import("@tauri-apps/api/core")
+      .then(({ invoke }) => {
+        return invoke<string>("read_file_content", {
+          rootPath,
+          filePath: symbol.file,
+        });
+      })
       .then((fileContent) => {
         setContent(fileContent);
         setLoading(false);
@@ -208,6 +211,7 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
     if (!isTauri || !rootPath) return;
 
     try {
+      const { invoke } = await import("@tauri-apps/api/core");
       await invoke("open_file_in_editor", {
         rootPath,
         filePath: symbol.file,
