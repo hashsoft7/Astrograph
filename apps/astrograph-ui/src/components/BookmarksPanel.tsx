@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAnalysisStore } from "../state/store";
 import { Symbol } from "../types";
+import SourcePreview from "./SourcePreview";
 
 const BookmarksPanel = () => {
   const analysis = useAnalysisStore((state) => state.analysis);
@@ -196,6 +197,12 @@ const BookmarksPanel = () => {
               </div>
             </div>
           )}
+
+          {/* Source Preview */}
+          <SourcePreview
+            symbol={selectedSymbol}
+            rootPath={analysis?.root ?? null}
+          />
         </div>
       ) : (
         <div className="empty-state">Select a symbol to inspect details.</div>

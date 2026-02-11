@@ -642,6 +642,128 @@ body {
   padding: 4px;
 }
 
+/* Source Preview */
+.source-preview {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #1f2937;
+}
+
+.source-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+
+.source-preview-file {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.source-preview-location {
+  color: #64748b;
+}
+
+.source-preview-code {
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  overflow: auto;
+  max-height: 400px;
+}
+
+.source-preview-code pre {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-family: "Fira Code", "Consolas", "Monaco", monospace;
+  overflow-x: auto;
+}
+
+.source-preview-code code {
+  color: #e2e8f0;
+}
+
+.source-preview-code .symbol-highlight {
+  background: rgba(251, 191, 36, 0.2);
+  border-bottom: 2px solid #fbbf24;
+  padding: 2px 0;
+}
+
+.source-preview-loading,
+.source-preview-error {
+  padding: 12px;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.source-preview-error {
+  color: #fca5a5;
+  background: rgba(127, 29, 29, 0.2);
+  border: 1px solid #7f1d1d;
+  border-radius: 6px;
+}
+
+/* Prism.js theme overrides for dark theme */
+.source-preview-code .token.comment,
+.source-preview-code .token.prolog,
+.source-preview-code .token.doctype,
+.source-preview-code .token.cdata {
+  color: #64748b;
+}
+
+.source-preview-code .token.punctuation {
+  color: #94a3b8;
+}
+
+.source-preview-code .token.property,
+.source-preview-code .token.tag,
+.source-preview-code .token.boolean,
+.source-preview-code .token.number,
+.source-preview-code .token.constant,
+.source-preview-code .token.symbol,
+.source-preview-code .token.deleted {
+  color: #f472b6;
+}
+
+.source-preview-code .token.selector,
+.source-preview-code .token.attr-name,
+.source-preview-code .token.string,
+.source-preview-code .token.char,
+.source-preview-code .token.builtin,
+.source-preview-code .token.inserted {
+  color: #34d399;
+}
+
+.source-preview-code .token.operator,
+.source-preview-code .token.entity,
+.source-preview-code .token.url,
+.source-preview-code .language-css .token.string,
+.source-preview-code .style .token.string {
+  color: #60a5fa;
+}
+
+.source-preview-code .token.atrule,
+.source-preview-code .token.attr-value,
+.source-preview-code .token.keyword {
+  color: #a78bfa;
+}
+
+.source-preview-code .token.function,
+.source-preview-code .token.class-name {
+  color: #fbbf24;
+}
+
+.source-preview-code .token.regex,
+.source-preview-code .token.important,
+.source-preview-code .token.variable {
+  color: #fb923c;
+}
+
 /* Bookmarks */
 .bookmark-list {
   display: flex;
