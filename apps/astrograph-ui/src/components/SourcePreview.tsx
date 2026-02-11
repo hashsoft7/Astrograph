@@ -113,7 +113,6 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
 
   useEffect(() => {
     if (!isTauri) {
-      setError("Source preview is only available in the desktop app");
       return;
     }
 
@@ -179,6 +178,11 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
 
     return { code: syntaxHighlighted, startLine };
   }, [content, symbol.span, language]);
+
+  // Don't render anything if Tauri is not available (e.g., in browser/e2e tests)
+  if (!isTauri) {
+    return null;
+  }
 
   if (loading) {
     return (
