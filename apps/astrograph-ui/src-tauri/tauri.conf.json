@@ -5,7 +5,7 @@
   "identifier": "com.astrograph.app",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:4173",
+    "devUrl": "http://127.0.0.1:4173",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
