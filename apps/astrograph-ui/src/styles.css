@@ -657,6 +657,12 @@ body {
   font-size: 11px;
 }
 
+.source-preview-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .source-preview-file {
   color: #94a3b8;
   font-weight: 500;

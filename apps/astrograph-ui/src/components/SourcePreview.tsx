@@ -192,6 +192,20 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
     return null;
   }
 
+  const handleOpenInEditor = async () => {
+    if (!rootPath) return;
+
+    try {
+      await invoke("open_file_in_editor", {
+        rootPath,
+        filePath: symbol.file,
+        line: symbol.span.start_line,
+      });
+    } catch (err) {
+      console.error("Failed to open file in editor:", err);
+    }
+  };
+
   return (
     <div className="source-preview">
       <div className="source-preview-header">
@@ -199,6 +213,15 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
         <span className="source-preview-location">
           Lines {symbol.span.start_line}:{symbol.span.start_col} - {symbol.span.end_line}:{symbol.span.end_col}
         </span>
+      </div>
+      <div className="source-preview-actions">
+        <button
+          className="button secondary"
+          onClick={handleOpenInEditor}
+          title="Open file in default editor"
+        >
+          Open in Editor
+        </button>
       </div>
       <div className="source-preview-code">
         <pre className={`language-${language}`}>

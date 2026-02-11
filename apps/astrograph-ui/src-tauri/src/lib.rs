@@ -3,6 +3,7 @@ use serde::Serialize;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
+use std::process::Command;
 
 #[derive(Debug, Serialize)]
 #[serde(tag = "code")]
@@ -116,11 +117,82 @@ fn read_file_content(
     })
 }
 
+#[derive(Debug, Serialize)]
+#[serde(tag = "code")]
+pub enum OpenFileErrorPayload {
+    #[serde(rename = "file_not_found")]
+    FileNotFound { message: String },
+    #[serde(rename = "io_error")]
+    IoError { message: String },
+    #[serde(rename = "invalid_path")]
+    InvalidPath { message: String },
+}
+
+#[tauri::command]
+fn open_file_in_editor(
+    root_path: String,
+    file_path: String,
+    _line: Option<usize>,
+) -> Result<(), OpenFileErrorPayload> {
+    let root = PathBuf::from(&root_path);
+    if !root.exists() {
+        return Err(OpenFileErrorPayload::InvalidPath {
+            message: "Root path does not exist.".to_string(),
+        });
+    }
+
+    let file = root.join(&file_path);
+    
+    // Security: Ensure the file path is within the root directory
+    if !file.starts_with(&root) {
+        return Err(OpenFileErrorPayload::InvalidPath {
+            message: "File path is outside the project root.".to_string(),
+        });
+    }
+
+    if !file.exists() {
+        return Err(OpenFileErrorPayload::FileNotFound {
+            message: format!("File not found: {}", file_path),
+        });
+    }
+
+    if !file.is_file() {
+        return Err(OpenFileErrorPayload::InvalidPath {
+            message: format!("Path is not a file: {}", file_path),
+        });
+    }
+
+    // Open file with OS default application
+    // Note: Line numbers are not universally supported by all editors via command line
+    let result = if cfg!(target_os = "windows") {
+        // Windows: use 'start' command
+        Command::new("cmd")
+            .args(["/C", "start", "", &file.to_string_lossy()])
+            .spawn()
+    } else if cfg!(target_os = "macos") {
+        // macOS: use 'open' command
+        Command::new("open")
+            .arg(&file.to_string_lossy())
+            .spawn()
+    } else {
+        // Linux: use 'xdg-open'
+        Command::new("xdg-open")
+            .arg(&file.to_string_lossy())
+            .spawn()
+    };
+
+    result.map_err(|err| OpenFileErrorPayload::IoError {
+        message: format!("Failed to open file: {}", err),
+    })?;
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![analyze_project_dir, read_file_content])
+        .invoke_handler(tauri::generate_handler![analyze_project_dir, read_file_content, open_file_in_editor])
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
