@@ -101,6 +101,9 @@ function highlightSpan(
   return result.join("\n");
 }
 
+// Check if Tauri is available (same method as App.tsx)
+const isTauri = Boolean(import.meta.env.TAURI_PLATFORM);
+
 const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -109,6 +112,11 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
   const language = useMemo(() => detectLanguage(symbol.file), [symbol.file]);
 
   useEffect(() => {
+    if (!isTauri) {
+      setError("Source preview is only available in the desktop app");
+      return;
+    }
+
     if (!rootPath) {
       setError("No project root path available");
       return;
@@ -193,7 +201,7 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
   }
 
   const handleOpenInEditor = async () => {
-    if (!rootPath) return;
+    if (!isTauri || !rootPath) return;
 
     try {
       await invoke("open_file_in_editor", {
@@ -214,15 +222,17 @@ const SourcePreview = ({ symbol, rootPath }: SourcePreviewProps) => {
           Lines {symbol.span.start_line}:{symbol.span.start_col} - {symbol.span.end_line}:{symbol.span.end_col}
         </span>
       </div>
-      <div className="source-preview-actions">
-        <button
-          className="button secondary"
-          onClick={handleOpenInEditor}
-          title="Open file in default editor"
-        >
-          Open in Editor
-        </button>
-      </div>
+      {isTauri && (
+        <div className="source-preview-actions">
+          <button
+            className="button secondary"
+            onClick={handleOpenInEditor}
+            title="Open file in default editor"
+          >
+            Open in Editor
+          </button>
+        </div>
+      )}
       <div className="source-preview-code">
         <pre className={`language-${language}`}>
           <code
