@@ -68,10 +68,7 @@ pub enum ReadFileErrorPayload {
 }
 
 #[tauri::command]
-fn read_file_content(
-    root_path: String,
-    file_path: String,
-) -> Result<String, ReadFileErrorPayload> {
+fn read_file_content(root_path: String, file_path: String) -> Result<String, ReadFileErrorPayload> {
     let root = PathBuf::from(&root_path);
     if !root.exists() {
         return Err(ReadFileErrorPayload::InvalidPath {
@@ -80,7 +77,7 @@ fn read_file_content(
     }
 
     let file = root.join(&file_path);
-    
+
     // Security: Ensure the file path is within the root directory
     if !file.starts_with(&root) {
         return Err(ReadFileErrorPayload::InvalidPath {
@@ -142,7 +139,7 @@ fn open_file_in_editor(
     }
 
     let file = root.join(&file_path);
-    
+
     // Security: Ensure the file path is within the root directory
     if !file.starts_with(&root) {
         return Err(OpenFileErrorPayload::InvalidPath {
@@ -171,9 +168,7 @@ fn open_file_in_editor(
             .spawn()
     } else if cfg!(target_os = "macos") {
         // macOS: use 'open' command
-        Command::new("open")
-            .arg(&file.to_string_lossy())
-            .spawn()
+        Command::new("open").arg(&file.to_string_lossy()).spawn()
     } else {
         // Linux: use 'xdg-open'
         Command::new("xdg-open")
@@ -192,7 +187,11 @@ fn open_file_in_editor(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![analyze_project_dir, read_file_content, open_file_in_editor])
+        .invoke_handler(tauri::generate_handler![
+            analyze_project_dir,
+            read_file_content,
+            open_file_in_editor
+        ])
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
