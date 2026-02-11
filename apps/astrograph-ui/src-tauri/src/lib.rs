@@ -168,11 +168,13 @@ fn open_file_in_editor(
             .spawn()
     } else if cfg!(target_os = "macos") {
         // macOS: use 'open' command
-        Command::new("open").arg(&file.to_string_lossy()).spawn()
+        Command::new("open")
+            .arg(&*file.to_string_lossy())
+            .spawn()
     } else {
         // Linux: use 'xdg-open'
         Command::new("xdg-open")
-            .arg(&file.to_string_lossy())
+            .arg(&*file.to_string_lossy())
             .spawn()
     };
 
