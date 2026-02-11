@@ -1,7 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useAnalysisStore } from "../state/store";
 import { Symbol } from "../types";
-import SourcePreview from "./SourcePreview";
+
+// Check if Tauri is available (same method as App.tsx)
+const isTauri = Boolean(import.meta.env.TAURI_PLATFORM);
+
+// Lazy load SourcePreview only when Tauri is available
+const SourcePreview = isTauri
+  ? lazy(() => import("./SourcePreview"))
+  : null;
 
 const BookmarksPanel = () => {
   const analysis = useAnalysisStore((state) => state.analysis);
@@ -199,10 +206,14 @@ const BookmarksPanel = () => {
           )}
 
           {/* Source Preview */}
-          <SourcePreview
-            symbol={selectedSymbol}
-            rootPath={analysis?.root ?? null}
-          />
+          {SourcePreview && selectedSymbol && (
+            <Suspense fallback={null}>
+              <SourcePreview
+                symbol={selectedSymbol}
+                rootPath={analysis?.root ?? null}
+              />
+            </Suspense>
+          )}
         </div>
       ) : (
         <div className="empty-state">Select a symbol to inspect details.</div>
