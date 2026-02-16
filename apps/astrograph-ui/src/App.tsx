@@ -1,15 +1,19 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import GraphView from "./components/GraphView";
 import Sidebar from "./components/Sidebar";
 import BookmarksPanel from "./components/BookmarksPanel";
+import ProgressBar, { type AnalysisProgress } from "./components/ProgressBar";
 import { useAnalysisStore } from "./state/store";
 import { AnalysisResult, CURRENT_SCHEMA_VERSION } from "./types";
 import {
   isSchemaVersionCompatible,
   validateAnalysisResult,
 } from "./validation";
+
+const ANALYSIS_PROGRESS_EVENT = "analysis-progress";
 
 const isTauri = Boolean(import.meta.env.TAURI_PLATFORM);
 
@@ -19,6 +23,8 @@ const App = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] =
+    useState<AnalysisProgress | null>(null);
 
   const loadAnalysisFromText = async (raw: string) => {
     try {
@@ -69,8 +75,10 @@ const App = () => {
   };
 
   const handleAnalyzeProject = async () => {
+    let unlisten: (() => void) | undefined;
     try {
       setError(null);
+      setAnalysisProgress(null);
       const selected = await open({
         directory: true,
         multiple: false,
@@ -79,8 +87,25 @@ const App = () => {
         return;
       }
       setIsAnalyzing(true);
+      if (isTauri) {
+        unlisten = await listen<{
+          phase: string;
+          current_file: string;
+          processed: number;
+          total: number;
+        }>(ANALYSIS_PROGRESS_EVENT, (event) => {
+          setAnalysisProgress({
+            phase: event.payload.phase,
+            currentFile: event.payload.current_file ?? "",
+            processed: event.payload.processed ?? 0,
+            total: event.payload.total ?? 0,
+          });
+        });
+      }
       const path = typeof selected === "string" ? selected : String(selected);
-      const result = await invoke<AnalysisResult>("analyze_project_dir", { path });
+      const result = await invoke<AnalysisResult>("analyze_project_dir", {
+        path,
+      });
       loadAnalysis(result);
     } catch (err) {
       console.error(err);
@@ -115,7 +140,9 @@ const App = () => {
         setError(message || "Analysis failed.");
       }
     } finally {
+      unlisten?.();
       setIsAnalyzing(false);
+      setAnalysisProgress(null);
     }
   };
 
@@ -190,7 +217,7 @@ const App = () => {
         </div>
       </header>
       {isTauri && isAnalyzing && !error && (
-        <div className="info-banner">Analyzing project… This may take a few moments.</div>
+        <ProgressBar progress={analysisProgress} />
       )}
       {error && <div className="error-banner">{error}</div>}
       {isDragging && (

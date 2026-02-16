@@ -69,6 +69,72 @@ body {
   font-size: 12px;
 }
 
+.progress-banner {
+  background: #1e3a5f;
+  color: #e2e8f0;
+  padding: 10px 20px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-bar-container {
+  height: 6px;
+  background: #0f172a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #4f46e5;
+  border-radius: 3px;
+  transition: width 0.15s ease-out;
+}
+
+.progress-bar-indeterminate {
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    #0f172a 0%,
+    #4f46e5 50%,
+    #0f172a 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-pulse 1.2s ease-in-out infinite;
+  border-radius: 3px;
+}
+
+@keyframes progress-pulse {
+  0%,
+  100% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: 0 0;
+  }
+}
+
+.progress-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.progress-message {
+  font-weight: 500;
+}
+
+.progress-current-file {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 .app-body {
   display: grid;
   grid-template-columns: 300px 1fr 320px;
