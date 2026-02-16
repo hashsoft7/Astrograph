@@ -18,8 +18,11 @@ pub enum AnalyzeErrorPayload {
     AnalysisFailed { message: String },
 }
 
+const ANALYSIS_PROGRESS_EVENT: &str = "analysis-progress";
+
 #[tauri::command]
 fn analyze_project_dir(
+    window: tauri::Window,
     path: String,
 ) -> Result<astrograph_engine::AnalysisResult, AnalyzeErrorPayload> {
     let path_buf = PathBuf::from(&path);
@@ -35,8 +38,12 @@ fn analyze_project_dir(
     }
 
     let config = AnalysisConfig::new(path_buf);
+    let app = window.app_handle().clone();
+    let progress = Some(move |event: astrograph_engine::ProgressEvent| {
+        let _ = app.emit(ANALYSIS_PROGRESS_EVENT, &event);
+    });
 
-    let output = analyze_project(config, None).map_err(|err| {
+    let output = analyze_project(config, None, progress).map_err(|err| {
         if let Some(io_err) = err.downcast_ref::<std::io::Error>() {
             if io_err.kind() == ErrorKind::PermissionDenied {
                 log::error!("I/O permission error during analysis: {err:?}");
