@@ -16,7 +16,7 @@ fn analyze_sample_project_succeeds() {
         return;
     }
     let config = AnalysisConfig::new(&root);
-    let out = analyze_project(config, None).expect("analyze should succeed");
+    let out = analyze_project(config, None, None::<fn(astrograph_engine::ProgressEvent)>).expect("analyze should succeed");
     assert!(out.result.stats.file_count >= 1);
     assert!(!out.result.symbols.is_empty());
 }
@@ -27,7 +27,7 @@ fn analyze_empty_dir_succeeds_with_zero_files() {
     let _ = fs::remove_dir_all(&root);
     fs::create_dir_all(&root).unwrap();
     let config = AnalysisConfig::new(&root);
-    let out = analyze_project(config, None).expect("analyze should succeed");
+    let out = analyze_project(config, None, None::<fn(astrograph_engine::ProgressEvent)>).expect("analyze should succeed");
     assert_eq!(out.result.stats.file_count, 0);
     assert!(out.result.symbols.is_empty());
     assert!(out.result.calls.is_empty());
@@ -43,7 +43,7 @@ fn manual_entrypoints_applied() {
     }
     let mut config = AnalysisConfig::new(&root);
     config.manual_entrypoints = vec!["helper".to_string()];
-    let out = analyze_project(config, None).expect("analyze should succeed");
+    let out = analyze_project(config, None, None::<fn(astrograph_engine::ProgressEvent)>).expect("analyze should succeed");
     let helper = out
         .result
         .symbols

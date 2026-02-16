@@ -39,7 +39,8 @@ fn gitignore_excludes_ignored_directories() {
     );
 
     let config = AnalysisConfig::new(&root);
-    let out = analyze_project(config, None).expect("analyze should succeed");
+    let out = analyze_project(config, None, None::<fn(astrograph_engine::ProgressEvent)>)
+        .expect("analyze should succeed");
 
     let file_paths: Vec<&str> = out.result.files.iter().map(|f| f.path.as_str()).collect();
     println!(
@@ -86,7 +87,8 @@ fn astrographignore_excludes_directories() {
     );
 
     let config = AnalysisConfig::new(&root);
-    let out = analyze_project(config, None).expect("analyze should succeed");
+    let out = analyze_project(config, None, None::<fn(astrograph_engine::ProgressEvent)>)
+        .expect("analyze should succeed");
 
     let file_paths: Vec<&str> = out.result.files.iter().map(|f| f.path.as_str()).collect();
     println!(
@@ -131,7 +133,8 @@ fn both_gitignore_and_astrographignore_are_honored() {
     );
 
     let config = AnalysisConfig::new(&root);
-    let out = analyze_project(config, None).expect("analyze should succeed");
+    let out = analyze_project(config, None, None::<fn(astrograph_engine::ProgressEvent)>)
+        .expect("analyze should succeed");
 
     let file_paths: Vec<&str> = out.result.files.iter().map(|f| f.path.as_str()).collect();
     println!(
