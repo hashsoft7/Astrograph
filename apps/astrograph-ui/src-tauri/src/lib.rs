@@ -1,10 +1,10 @@
 use astrograph_engine::{analyze_project, AnalysisConfig};
 use serde::Serialize;
-use tauri::{Emitter, Manager};
 use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
 use std::process::Command;
+use tauri::{Emitter, Manager};
 
 #[derive(Debug, Serialize)]
 #[serde(tag = "code")]
