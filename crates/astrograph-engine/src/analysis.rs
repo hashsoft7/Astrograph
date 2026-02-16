@@ -5,12 +5,22 @@ use crate::parser::analyze_file;
 use anyhow::{anyhow, Result};
 use ignore::{DirEntry, WalkBuilder};
 use rayon::prelude::*;
+use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
+
+/// Progress event emitted during analysis for UI feedback.
+#[derive(Debug, Clone, Serialize)]
+pub struct ProgressEvent {
+    pub phase: String,
+    pub current_file: String,
+    pub processed: u32,
+    pub total: u32,
+}
 
 const SCHEMA_VERSION: &str = "0.1.0";
 
@@ -37,27 +47,52 @@ pub struct AnalysisOutput {
     pub cache: AnalysisCache,
 }
 
-pub fn analyze_project(
+pub fn analyze_project<F>(
     config: AnalysisConfig,
     cache: Option<AnalysisCache>,
-) -> Result<AnalysisOutput> {
+    progress: Option<F>,
+) -> Result<AnalysisOutput>
+where
+    F: Fn(ProgressEvent),
+{
     let root = config.root.canonicalize()?;
     let root_string = root.to_string_lossy().to_string();
 
     let mut cache = cache.unwrap_or_else(|| AnalysisCache::new(SCHEMA_VERSION, &root_string));
     let cached_files = cache.files.clone();
 
-    let files = collect_files(&root, config.follow_symlinks)?;
+    let files = collect_files(&root, config.follow_symlinks, progress.as_ref())?;
+    let total_files = files.len() as u32;
     let files_set: HashSet<String> = files
         .iter()
         .filter_map(|path| path.strip_prefix(&root).ok())
         .map(|path| path.to_string_lossy().to_string())
         .collect();
 
-    let file_outcomes: Vec<FileOutcome> = files
-        .par_iter()
-        .map(|path| analyze_path(path, &root, &cached_files))
-        .collect::<Result<Vec<_>>>()?;
+    let file_outcomes: Vec<FileOutcome> = if let Some(ref progress_fn) = progress {
+        let mut outcomes = Vec::with_capacity(files.len());
+        for (i, path) in files.iter().enumerate() {
+            let relative = path
+                .strip_prefix(&root)
+                .unwrap_or(path)
+                .to_string_lossy()
+                .replace('\\', "/");
+            progress_fn(ProgressEvent {
+                phase: "analyzing".to_string(),
+                current_file: relative.clone(),
+                processed: i as u32,
+                total: total_files,
+            });
+            let outcome = analyze_path(path, &root, &cached_files)?;
+            outcomes.push(outcome);
+        }
+        outcomes
+    } else {
+        files
+            .par_iter()
+            .map(|path| analyze_path(path, &root, &cached_files))
+            .collect::<Result<Vec<_>>>()?
+    };
 
     let mut file_infos = Vec::new();
     let mut symbols = Vec::new();
@@ -241,19 +276,21 @@ fn apply_manual_entrypoints(symbols: &mut [Symbol], manual_entrypoints: &[String
     }
 }
 
-fn collect_files(root: &Path, follow_symlinks: bool) -> Result<Vec<PathBuf>> {
+fn collect_files<F>(
+    root: &Path,
+    follow_symlinks: bool,
+    progress: Option<&F>,
+) -> Result<Vec<PathBuf>>
+where
+    F: Fn(ProgressEvent),
+{
     let mut files = Vec::new();
     let supported = supported_extensions();
 
     let mut builder = WalkBuilder::new(root);
     builder.follow_links(follow_symlinks);
-    // Respect .gitignore, .ignore, and related git configuration by default.
-    // These are enabled by default on WalkBuilder, but we set them explicitly
-    // here for clarity and future-proofing.
     builder.git_ignore(true).git_global(true).git_exclude(true);
-    // Allow project-specific ignore rules via a dedicated ignore file.
     builder.add_custom_ignore_filename(".astrographignore");
-    // Apply additional project-specific directory ignore rules.
     builder.filter_entry(|entry| !is_ignored(entry));
 
     for entry in builder.build() {
@@ -270,7 +307,21 @@ fn collect_files(root: &Path, follow_symlinks: bool) -> Result<Vec<PathBuf>> {
             .map(|ext: &std::ffi::OsStr| ext.to_string_lossy().to_ascii_lowercase());
         if let Some(ext) = ext {
             if supported.contains(&ext.as_str()) {
-                files.push(path.to_path_buf());
+                let path_buf = path.to_path_buf();
+                if let Some(progress_fn) = progress {
+                    let relative = path_buf
+                        .strip_prefix(root)
+                        .unwrap_or(&path_buf)
+                        .to_string_lossy()
+                        .replace('\\', "/");
+                    progress_fn(ProgressEvent {
+                        phase: "collecting".to_string(),
+                        current_file: relative,
+                        processed: files.len() as u32,
+                        total: 0,
+                    });
+                }
+                files.push(path_buf);
             }
         }
     }
@@ -320,7 +371,7 @@ mod tests {
         fs::create_dir_all(&temp_dir).unwrap();
 
         let config = AnalysisConfig::new(&temp_dir);
-        let output = analyze_project(config, None).unwrap();
+        let output = analyze_project(config, None, None::<fn(ProgressEvent)>).unwrap();
 
         assert_eq!(output.result.stats.file_count, 0);
         assert_eq!(output.result.stats.symbol_count, 0);

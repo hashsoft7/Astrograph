@@ -50,7 +50,7 @@ fn run() -> Result<()> {
     config.manual_entrypoints = cli.entrypoints;
 
     let cache = load_cache(cli.cache.as_ref())?;
-    let output = analyze_project(config, cache)?;
+    let output = analyze_project(config, cache, None::<fn(astrograph_engine::ProgressEvent)>)?;
 
     println!("Writing analysis to {} ...", cli.out.display());
 
