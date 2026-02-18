@@ -212,6 +212,9 @@ const App = () => {
               <span>{analysis.stats.file_count} files</span>
               <span>{analysis.stats.symbol_count} symbols</span>
               <span>{analysis.stats.call_count} calls</span>
+              {analysis.stats.reused_cache_files > 0 && (
+                <span>Reused {analysis.stats.reused_cache_files} from cache</span>
+              )}
             </div>
           )}
         </div>
