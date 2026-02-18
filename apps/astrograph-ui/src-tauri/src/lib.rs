@@ -1,4 +1,4 @@
-use astrograph_engine::{analyze_project, AnalysisConfig};
+use astrograph_engine::{analyze_project, AnalysisCache, AnalysisConfig};
 use serde::Serialize;
 use std::fs;
 use std::io::ErrorKind;
@@ -21,6 +21,51 @@ pub enum AnalyzeErrorPayload {
 
 const ANALYSIS_PROGRESS_EVENT: &str = "analysis-progress";
 
+fn load_cache(path: &PathBuf) -> Option<AnalysisCache> {
+    if !path.exists() {
+        return None;
+    }
+
+    match fs::read_to_string(path) {
+        Ok(data) => match serde_json::from_str(&data) {
+            Ok(cache) => Some(cache),
+            Err(err) => {
+                log::warn!(
+                    "Failed to parse cache file {}: {err}",
+                    path.to_string_lossy()
+                );
+                None
+            }
+        },
+        Err(err) => {
+            log::warn!(
+                "Failed to read cache file {}: {err}",
+                path.to_string_lossy()
+            );
+            None
+        }
+    }
+}
+
+fn save_cache(path: &PathBuf, cache: &AnalysisCache) {
+    match serde_json::to_string_pretty(cache) {
+        Ok(json) => {
+            if let Err(err) = fs::write(path, json) {
+                log::warn!(
+                    "Failed to write cache file {}: {err}",
+                    path.to_string_lossy()
+                );
+            }
+        }
+        Err(err) => {
+            log::warn!(
+                "Failed to serialize cache for {}: {err}",
+                path.to_string_lossy()
+            );
+        }
+    }
+}
+
 #[tauri::command]
 fn analyze_project_dir(
     window: tauri::Window,
@@ -38,13 +83,16 @@ fn analyze_project_dir(
         });
     }
 
+    let cache_path = path_buf.join(".astrograph-cache.json");
+    let cache = load_cache(&cache_path);
+
     let config = AnalysisConfig::new(path_buf);
     let app = window.app_handle().clone();
     let progress = Some(move |event: astrograph_engine::ProgressEvent| {
         let _ = app.emit(ANALYSIS_PROGRESS_EVENT, &event);
     });
 
-    let output = analyze_project(config, None, progress).map_err(|err| {
+    let output = analyze_project(config, cache, progress).map_err(|err| {
         if let Some(io_err) = err.downcast_ref::<std::io::Error>() {
             if io_err.kind() == ErrorKind::PermissionDenied {
                 log::error!("I/O permission error during analysis: {err:?}");
@@ -60,6 +108,8 @@ fn analyze_project_dir(
             message: "Analysis failed unexpectedly. See logs for details.".to_string(),
         }
     })?;
+
+    save_cache(&cache_path, &output.cache);
 
     Ok(output.result)
 }
