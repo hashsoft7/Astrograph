@@ -73,6 +73,10 @@ npx playwright install
 - `--entrypoint`: mark entrypoints manually (repeatable)
 - `--follow-symlinks`: follow symlinks when scanning
 
+## Contributing
+
+We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, testing, and how to submit changes.
+
 ## Docs
 
 - `docs/product.md`: product goals, features, and architecture
