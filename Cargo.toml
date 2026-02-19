@@ -9,5 +9,5 @@ members = [
 [workspace.package]
 edition = "2021"
 license = "MIT"
-repository = "https://example.com/astrograph"
+repository = "https://github.com/hashsoft7/Astrograph"
 version = "0.1.0"
