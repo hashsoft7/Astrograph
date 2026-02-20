@@ -1,4 +1,5 @@
 import React from "react";
+import { ErrorDisplay } from "./ErrorDisplay";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -36,27 +37,13 @@ export class ErrorBoundary extends React.Component<
         import.meta.env.DEV ?? process.env.NODE_ENV === "development";
 
       return (
-        <div className="error-boundary" role="alert">
-          <h2 className="error-boundary-title">Something went wrong</h2>
-          <p className="error-boundary-message">
-            An unexpected error occurred. Please try reloading the app.
-          </p>
-          {isDev && (
-            <details className="error-boundary-details">
-              <summary>Error details</summary>
-              <pre className="error-boundary-stack">
-                {this.state.error.stack}
-              </pre>
-            </details>
-          )}
-          <button
-            type="button"
-            className="error-boundary-reload"
-            onClick={this.handleReload}
-          >
-            Reload App
-          </button>
-        </div>
+        <ErrorDisplay
+          title="Something went wrong"
+          message="An unexpected error occurred. Please try reloading the app."
+          details={isDev ? this.state.error.stack ?? undefined : undefined}
+          actionLabel="Reload App"
+          onAction={this.handleReload}
+        />
       );
     }
     return this.props.children;
