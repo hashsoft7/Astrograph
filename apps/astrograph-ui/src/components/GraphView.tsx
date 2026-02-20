@@ -223,6 +223,13 @@ const GraphView = () => {
         },
       },
       {
+        selector: "node.search-highlight",
+        style: {
+          "border-width": 4,
+          "border-color": "#38bdf8",
+        },
+      },
+      {
         selector: "node[kind='class'], node[kind='struct']",
         style: {
           shape: "round-rectangle",
@@ -335,6 +342,19 @@ const GraphView = () => {
 
     cyRef.current = cy;
 
+    // When a symbol is selected (e.g. from search/sidebar), center graph on it and highlight briefly
+    if (selectedSymbolId) {
+      const node = cy.$id(selectedSymbolId);
+      if (node.length > 0) {
+        cy.center(node);
+        cy.zoom(cy.zoom() * 1.2);
+        node.addClass("search-highlight");
+        setTimeout(() => {
+          node.removeClass("search-highlight");
+        }, 2000);
+      }
+    }
+
     // Node tap: select symbol; double-tap on another node finds path
     let lastTapTime = 0;
     let lastTapNode: string | null = null;
@@ -374,6 +394,7 @@ const GraphView = () => {
     elements,
     graphStyles,
     layoutType,
+    selectedSymbolId,
     selectSymbol,
     findCallPath,
     setHighlightedPath,
