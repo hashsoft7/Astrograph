@@ -2,9 +2,47 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import cytoscape, { Core, ElementDefinition } from "cytoscape";
 import { useAnalysisStore } from "../state/store";
 import { Symbol, CallEdge } from "../types";
+import type { Theme } from "./ThemeToggle";
 import GraphControls from "./GraphControls";
 
-const GraphView = () => {
+const GRAPH_COLORS: Record<
+  Theme,
+  {
+    nodeBg: string;
+    nodeLabel: string;
+    edge: string;
+    entrypoint: string;
+    bookmarked: string;
+    selected: string;
+    highlighted: string;
+    searchMatch: string;
+  }
+> = {
+  dark: {
+    nodeBg: "#4f46e5",
+    nodeLabel: "#e2e8f0",
+    edge: "#475569",
+    entrypoint: "#f59e0b",
+    bookmarked: "#22c55e",
+    selected: "#ef4444",
+    highlighted: "#8b5cf6",
+    searchMatch: "#38bdf8",
+  },
+  light: {
+    nodeBg: "#4f46e5",
+    nodeLabel: "#1f2937",
+    edge: "#6b7280",
+    entrypoint: "#d97706",
+    bookmarked: "#059669",
+    selected: "#dc2626",
+    highlighted: "#7c3aed",
+    searchMatch: "#0284c7",
+  },
+};
+
+type GraphViewProps = { theme: Theme };
+
+const GraphView = ({ theme }: GraphViewProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const cyRef = useRef<Core | null>(null);
   const analysis = useAnalysisStore((state) => state.analysis);
@@ -147,15 +185,17 @@ const GraphView = () => {
     getVisibleSymbols,
   ]);
 
+  const colors = GRAPH_COLORS[theme];
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const graphStyles = useMemo<any[]>(
     () => [
       {
         selector: "node",
         style: {
-          "background-color": "#4f46e5",
+          "background-color": colors.nodeBg,
           label: "data(label)",
-          color: "#e2e8f0",
+          color: colors.nodeLabel,
           "font-size": "9px",
           "text-valign": "center",
           "text-halign": "center",
@@ -170,8 +210,8 @@ const GraphView = () => {
         style: {
           width: 1.2,
           "curve-style": "bezier",
-          "line-color": "#475569",
-          "target-arrow-color": "#475569",
+          "line-color": colors.edge,
+          "target-arrow-color": colors.edge,
           "target-arrow-shape": "triangle",
           "arrow-scale": 0.8,
         },
@@ -179,7 +219,7 @@ const GraphView = () => {
       {
         selector: "node.entrypoint",
         style: {
-          "background-color": "#f59e0b",
+          "background-color": colors.entrypoint,
           width: 35,
           height: 35,
         },
@@ -188,13 +228,13 @@ const GraphView = () => {
         selector: "node.bookmarked",
         style: {
           "border-width": 3,
-          "border-color": "#22c55e",
+          "border-color": colors.bookmarked,
         },
       },
       {
         selector: "node.selected",
         style: {
-          "background-color": "#ef4444",
+          "background-color": colors.selected,
           width: 40,
           height: 40,
         },
@@ -202,31 +242,31 @@ const GraphView = () => {
       {
         selector: "node.highlighted",
         style: {
-          "background-color": "#8b5cf6",
+          "background-color": colors.highlighted,
           "border-width": 3,
-          "border-color": "#c4b5fd",
+          "border-color": colors.highlighted,
         },
       },
       {
         selector: "edge.highlighted",
         style: {
           width: 3,
-          "line-color": "#8b5cf6",
-          "target-arrow-color": "#8b5cf6",
+          "line-color": colors.highlighted,
+          "target-arrow-color": colors.highlighted,
         },
       },
       {
         selector: "node.search-match",
         style: {
           "border-width": 3,
-          "border-color": "#38bdf8",
+          "border-color": colors.searchMatch,
         },
       },
       {
         selector: "node.search-highlight",
         style: {
           "border-width": 4,
-          "border-color": "#38bdf8",
+          "border-color": colors.searchMatch,
         },
       },
       {
@@ -248,7 +288,7 @@ const GraphView = () => {
         },
       },
     ],
-    []
+    [theme]
   );
 
   // Find call path between two nodes
@@ -392,13 +432,19 @@ const GraphView = () => {
   }, [
     analysis,
     elements,
-    graphStyles,
     layoutType,
     selectedSymbolId,
     selectSymbol,
     findCallPath,
     setHighlightedPath,
   ]);
+
+  // Apply theme styles when graphStyles change (e.g. theme toggle) without recreating the graph
+  useEffect(() => {
+    if (cyRef.current) {
+      cyRef.current.style(graphStyles);
+    }
+  }, [graphStyles]);
 
   // Keyboard shortcuts
   useEffect(() => {

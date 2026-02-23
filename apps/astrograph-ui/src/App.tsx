@@ -248,7 +248,7 @@ const App = () => {
       <div className="app-body">
         <Sidebar />
         <main className="graph-panel">
-          <GraphView />
+          <GraphView theme={theme} />
         </main>
         <BookmarksPanel />
       </div>
