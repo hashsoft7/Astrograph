@@ -6,12 +6,22 @@ import GraphView from "./components/GraphView";
 import Sidebar from "./components/Sidebar";
 import BookmarksPanel from "./components/BookmarksPanel";
 import ProgressBar, { type AnalysisProgress } from "./components/ProgressBar";
+import ThemeToggle, { type Theme } from "./components/ThemeToggle";
 import { useAnalysisStore } from "./state/store";
 import { AnalysisResult, CURRENT_SCHEMA_VERSION } from "./types";
 import {
   isSchemaVersionCompatible,
   validateAnalysisResult,
 } from "./validation";
+
+const THEME_STORAGE_KEY = "astrograph-theme";
+
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+  return "dark";
+}
 
 const ANALYSIS_PROGRESS_EVENT = "analysis-progress";
 
@@ -25,6 +35,12 @@ const App = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] =
     useState<AnalysisProgress | null>(null);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   const loadAnalysisFromText = async (raw: string) => {
     try {
@@ -189,6 +205,7 @@ const App = () => {
       <header className="app-header">
         <div className="logo">✦ Astrograph</div>
         <div className="header-actions">
+          <ThemeToggle theme={theme} onThemeChange={setTheme} />
           {isTauri && (
             <button
               type="button"

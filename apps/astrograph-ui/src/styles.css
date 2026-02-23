@@ -152,6 +152,25 @@ body {
   gap: 12px;
 }
 
+.theme-toggle {
+  background: var(--bg-control);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-control-hover);
+}
+
 .header-meta {
   display: flex;
   gap: 12px;
