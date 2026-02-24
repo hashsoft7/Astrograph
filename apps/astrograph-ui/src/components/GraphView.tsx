@@ -355,6 +355,76 @@ const GraphView = ({ theme }: GraphViewProps) => {
     }
   }, [selectedSymbolId]);
 
+  const exportBg = theme === "dark" ? "#0f172a" : "#f8fafc";
+
+  const handleExportPNG = useCallback(async () => {
+    if (!cyRef.current) return;
+    const cy = cyRef.current;
+    const dataUri = (cy as unknown as { png: (opts?: { full?: boolean; bg?: string }) => string }).png({
+      full: true,
+      bg: exportBg,
+    });
+    const { downloadExportFile } = await import("../utils/exportGraph");
+    await downloadExportFile(
+      "graph.png",
+      "image/png",
+      () => Promise.resolve(dataUri)
+    );
+  }, [exportBg]);
+
+  const handleExportSVG = useCallback(async () => {
+    if (!cyRef.current) return;
+    const cy = cyRef.current;
+    const ext = cy.extent();
+    const padding = 40;
+    const width = ext.w + padding * 2;
+    const height = ext.h + padding * 2;
+    const px = (x: number) => x - ext.x1 + padding;
+    const py = (y: number) => y - ext.y1 + padding;
+    let svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+<rect width="100%" height="100%" fill="${exportBg}"/>`;
+    cy.edges().forEach((e) => {
+      const sp = e.source().renderedPosition();
+      const tp = e.target().renderedPosition();
+      const sx = sp.x + (e.source().width() ?? 0) / 2;
+      const sy = sp.y + (e.source().height() ?? 0) / 2;
+      const tx = tp.x + (e.target().width() ?? 0) / 2;
+      const ty = tp.y + (e.target().height() ?? 0) / 2;
+      svg += `\n  <line x1="${px(sx)}" y1="${py(sy)}" x2="${px(tx)}" y2="${py(ty)}" stroke="#475569" stroke-width="1.2" fill="none"/>`;
+    });
+    cy.nodes().forEach((n) => {
+      const pos = n.renderedPosition();
+      const w = n.width() ?? 30;
+      const h = n.height() ?? 30;
+      const x = px(pos.x - w / 2);
+      const y = py(pos.y - h / 2);
+      const label = String(n.data("label") ?? n.id()).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      const isEntry = n.hasClass("entrypoint");
+      const fill = isEntry ? "#f59e0b" : "#4f46e5";
+      svg += `\n  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${fill}"/>`;
+      svg += `\n  <text x="${x + w / 2}" y="${y + h / 2}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#e2e8f0">${label}</text>`;
+    });
+    svg += "\n</svg>";
+    const { downloadExportFile } = await import("../utils/exportGraph");
+    await downloadExportFile(
+      "graph.svg",
+      "image/svg+xml",
+      () => Promise.resolve(svg)
+    );
+  }, [exportBg]);
+
+  const handleExportJSON = useCallback(async () => {
+    if (!analysis) return;
+    const json = JSON.stringify(analysis, null, 2);
+    const { downloadExportFile } = await import("../utils/exportGraph");
+    await downloadExportFile(
+      "analysis.json",
+      "application/json",
+      () => Promise.resolve(json)
+    );
+  }, [analysis]);
+
   // Initialize cytoscape
   useEffect(() => {
     if (!containerRef.current) {
@@ -487,6 +557,9 @@ const GraphView = ({ theme }: GraphViewProps) => {
         onZoomOut={handleZoomOut}
         onFit={handleFit}
         onCenter={handleCenter}
+        onExportPNG={handleExportPNG}
+        onExportSVG={handleExportSVG}
+        onExportJSON={handleExportJSON}
       />
       <div className="graph-canvas" ref={containerRef} />
       {highlightedPath.length > 0 && (

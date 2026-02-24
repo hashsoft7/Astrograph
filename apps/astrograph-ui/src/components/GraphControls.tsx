@@ -5,6 +5,9 @@ interface GraphControlsProps {
   onZoomOut: () => void;
   onFit: () => void;
   onCenter: () => void;
+  onExportPNG: () => void;
+  onExportSVG: () => void;
+  onExportJSON: () => void;
 }
 
 const GraphControls = ({
@@ -12,6 +15,9 @@ const GraphControls = ({
   onZoomOut,
   onFit,
   onCenter,
+  onExportPNG,
+  onExportSVG,
+  onExportJSON,
 }: GraphControlsProps) => {
   const graphViewMode = useAnalysisStore((state) => state.graphViewMode);
   const setGraphViewMode = useAnalysisStore((state) => state.setGraphViewMode);
@@ -70,6 +76,30 @@ const GraphControls = ({
             title="Center Selected"
           >
             ◎
+          </button>
+        </div>
+
+        <div className="control-group">
+          <button
+            className="control-btn"
+            onClick={onExportPNG}
+            title="Export as PNG"
+          >
+            PNG
+          </button>
+          <button
+            className="control-btn"
+            onClick={onExportSVG}
+            title="Export as SVG"
+          >
+            SVG
+          </button>
+          <button
+            className="control-btn"
+            onClick={onExportJSON}
+            title="Export as JSON"
+          >
+            JSON
           </button>
         </div>
 
