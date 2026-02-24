@@ -1,4 +1,5 @@
 use astrograph_engine::{analyze_project, AnalysisCache, AnalysisConfig};
+use base64::Engine;
 use serde::Serialize;
 use std::fs;
 use std::io::ErrorKind;
@@ -241,6 +242,17 @@ fn open_file_in_editor(
     Ok(())
 }
 
+/// Writes export file contents (base64-encoded) to the given path.
+/// Used for graph export (PNG, SVG, JSON) when running in Tauri.
+#[tauri::command]
+fn write_export_file(path: String, contents_base64: String) -> Result<(), String> {
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(&contents_base64)
+        .map_err(|e| format!("Invalid base64: {}", e))?;
+    fs::write(&path, bytes).map_err(|e| format!("Failed to write file: {}", e))?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -248,7 +260,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             analyze_project_dir,
             read_file_content,
-            open_file_in_editor
+            open_file_in_editor,
+            write_export_file
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
