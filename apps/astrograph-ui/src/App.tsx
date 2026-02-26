@@ -1,14 +1,16 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import GraphView from "./components/GraphView";
+import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import Sidebar from "./components/Sidebar";
 import BookmarksPanel from "./components/BookmarksPanel";
 import ProgressBar, { type AnalysisProgress } from "./components/ProgressBar";
 import ThemeToggle, { type Theme } from "./components/ThemeToggle";
 import { useAnalysisStore } from "./state/store";
 import { AnalysisResult, CURRENT_SCHEMA_VERSION } from "./types";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import {
   isSchemaVersionCompatible,
   validateAnalysisResult,
@@ -36,6 +38,13 @@ const App = () => {
   const [analysisProgress, setAnalysisProgress] =
     useState<AnalysisProgress | null>(null);
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useKeyboardShortcuts({
+    onOpenFile: () => fileInputRef.current?.click(),
+    onShowShortcuts: () => setShowShortcuts(true),
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -219,6 +228,7 @@ const App = () => {
           <label className="file-button">
             Load analysis
             <input
+              ref={fileInputRef}
               type="file"
               accept="application/json"
               onChange={handleFileLoad}
@@ -245,9 +255,12 @@ const App = () => {
           <div className="drop-message">Drop analysis.json here</div>
         </div>
       )}
+      {showShortcuts && (
+        <KeyboardShortcuts onClose={() => setShowShortcuts(false)} />
+      )}
       <div className="app-body">
         <Sidebar />
-        <main className="graph-panel">
+        <main id="graph-panel" className="graph-panel" tabIndex={-1}>
           <GraphView theme={theme} />
         </main>
         <BookmarksPanel />

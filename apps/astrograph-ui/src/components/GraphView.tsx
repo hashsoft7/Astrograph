@@ -534,15 +534,11 @@ const GraphView = ({ theme }: GraphViewProps) => {
         }
       }
 
-      if (e.key === "Escape") {
-        selectSymbol(null);
-        setHighlightedPath([]);
-      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleZoomIn, handleZoomOut, handleFit, selectSymbol, setHighlightedPath]);
+  }, [handleZoomIn, handleZoomOut, handleFit]);
 
   if (!analysis) {
     return (
