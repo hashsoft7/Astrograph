@@ -129,6 +129,7 @@ const removeOrphanedBookmarksForAnalysis = (
 
 export type GraphViewMode = "all" | "entrypoints" | "symbol-centric";
 export type LayoutType = "cose" | "breadthfirst" | "circle" | "grid" | "concentric";
+export type SidebarTab = "symbols" | "files" | "entrypoints";
 
 interface AnalysisState {
   analysis: AnalysisResult | null;
@@ -140,6 +141,7 @@ interface AnalysisState {
   layoutType: LayoutType;
   showEntrypointsOnly: boolean;
   highlightedPath: string[];
+  activeSidebarTab: SidebarTab;
   loadAnalysis: (data: AnalysisResult) => void;
   selectSymbol: (id: string | null) => void;
   setSelectedFile: (path: string | null) => void;
@@ -150,6 +152,7 @@ interface AnalysisState {
   setLayoutType: (layout: LayoutType) => void;
   setShowEntrypointsOnly: (value: boolean) => void;
   setHighlightedPath: (path: string[]) => void;
+  setActiveSidebarTab: (tab: SidebarTab) => void;
 }
 
 export const useAnalysisStore = create<AnalysisState>((set, get) => ({
@@ -162,6 +165,7 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
   layoutType: "cose",
   showEntrypointsOnly: false,
   highlightedPath: [],
+  activeSidebarTab: "symbols",
   loadAnalysis: (data) => {
     const rawBookmarks = loadBookmarksForRoot(data.root);
     const projectBookmarks = removeOrphanedBookmarksForAnalysis(
@@ -217,4 +221,5 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
   setLayoutType: (layout) => set({ layoutType: layout }),
   setShowEntrypointsOnly: (value) => set({ showEntrypointsOnly: value }),
   setHighlightedPath: (path) => set({ highlightedPath: path }),
+  setActiveSidebarTab: (tab) => set({ activeSidebarTab: tab }),
 }));

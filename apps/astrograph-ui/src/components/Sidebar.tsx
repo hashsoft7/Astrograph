@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
-import { useAnalysisStore } from "../state/store";
+import { useAnalysisStore, type SidebarTab } from "../state/store";
 import { SymbolKind } from "../types";
 import FileTree from "./FileTree";
-
-type TabType = "symbols" | "files" | "entrypoints";
 
 const kindIcons: Record<SymbolKind, string> = {
   class: "C",
@@ -25,8 +23,9 @@ const Sidebar = () => {
   const selectedFile = useAnalysisStore((state) => state.selectedFile);
   const selectSymbol = useAnalysisStore((state) => state.selectSymbol);
   const setSelectedFile = useAnalysisStore((state) => state.setSelectedFile);
+  const activeTab = useAnalysisStore((state) => state.activeSidebarTab);
+  const setActiveTab = useAnalysisStore((state) => state.setActiveSidebarTab);
 
-  const [activeTab, setActiveTab] = useState<TabType>("symbols");
   const [kindFilter, setKindFilter] = useState<SymbolKind | "all">("all");
 
   const symbols = useMemo(() => {
