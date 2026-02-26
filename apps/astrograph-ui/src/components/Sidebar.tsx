@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAnalysisStore, type SidebarTab } from "../state/store";
 import { SymbolKind } from "../types";
 import FileTree from "./FileTree";
@@ -27,6 +27,49 @@ const Sidebar = () => {
   const setActiveTab = useAnalysisStore((state) => state.setActiveSidebarTab);
 
   const [kindFilter, setKindFilter] = useState<SymbolKind | "all">("all");
+
+  useEffect(() => {
+    if (!selectedSymbolId) return;
+    const el = document.querySelector(
+      `[data-symbol-id="${selectedSymbolId}"]`
+    ) as HTMLElement | null;
+    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [selectedSymbolId]);
+
+  const handleSymbolListKeyDown = useCallback(
+    (
+      e: React.KeyboardEvent,
+      items: { id: string }[],
+      select: (id: string) => void
+    ) => {
+      if (items.length === 0) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const idx = selectedSymbolId
+          ? items.findIndex((s) => s.id === selectedSymbolId)
+          : -1;
+        const next = idx < items.length - 1 ? idx + 1 : 0;
+        select(items[next].id);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const idx = selectedSymbolId
+          ? items.findIndex((s) => s.id === selectedSymbolId)
+          : 0;
+        const prev = idx > 0 ? idx - 1 : items.length - 1;
+        select(items[prev].id);
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (selectedSymbolId) {
+          document.getElementById("graph-panel")?.focus();
+        }
+      }
+    },
+    [selectedSymbolId]
+  );
 
   const symbols = useMemo(() => {
     if (!analysis) {
@@ -140,10 +183,19 @@ const Sidebar = () => {
 
       {/* Symbol list */}
       {activeTab === "symbols" && (
-        <div className="symbol-list">
+        <div
+          className="symbol-list"
+          role="listbox"
+          aria-label="Symbol list"
+          tabIndex={0}
+          onKeyDown={(e) => handleSymbolListKeyDown(e, symbols, selectSymbol)}
+        >
           {symbols.map((symbol) => (
             <button
               key={symbol.id}
+              role="option"
+              aria-selected={symbol.id === selectedSymbolId}
+              data-symbol-id={symbol.id}
               className={`symbol-row ${
                 symbol.id === selectedSymbolId ? "selected" : ""
               }`}
@@ -181,10 +233,21 @@ const Sidebar = () => {
 
       {/* Entrypoints list */}
       {activeTab === "entrypoints" && (
-        <div className="symbol-list">
+        <div
+          className="symbol-list"
+          role="listbox"
+          aria-label="Entrypoints list"
+          tabIndex={0}
+          onKeyDown={(e) =>
+            handleSymbolListKeyDown(e, entrypoints, selectSymbol)
+          }
+        >
           {entrypoints.map((symbol) => (
             <button
               key={symbol.id}
+              role="option"
+              aria-selected={symbol.id === selectedSymbolId}
+              data-symbol-id={symbol.id}
               className={`symbol-row ${
                 symbol.id === selectedSymbolId ? "selected" : ""
               }`}
